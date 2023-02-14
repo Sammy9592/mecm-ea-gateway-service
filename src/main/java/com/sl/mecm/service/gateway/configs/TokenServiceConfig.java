@@ -1,10 +1,11 @@
-package com.sl.mecm.auth.intercptor.config;
+package com.sl.mecm.service.gateway.configs;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+
 @Configuration
-@ConfigurationProperties(prefix = "mecm.auth.intercptor.token")
+@ConfigurationProperties(prefix = "mecm.gateway-service.services.token")
 public class TokenServiceConfig {
 
     private String host;
@@ -12,6 +13,10 @@ public class TokenServiceConfig {
     private String pathQuery;
 
     private String pathSave;
+
+    private String pathSessionTrust;
+
+    private String pathClientTrust;
 
     private int timeout;
 
@@ -45,5 +50,21 @@ public class TokenServiceConfig {
 
     public void setTimeout(int timeout) {
         this.timeout = timeout;
+    }
+
+    public String getPathSessionTrust() {
+        return pathSessionTrust;
+    }
+
+    public void setPathSessionTrust(String pathSessionTrust) {
+        this.pathSessionTrust = pathSessionTrust;
+    }
+
+    public String getPathClientTrust() {
+        return pathClientTrust;
+    }
+
+    public void setPathClientTrust(String pathClientTrust) {
+        this.pathClientTrust = pathClientTrust;
     }
 }

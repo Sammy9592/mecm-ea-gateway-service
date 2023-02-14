@@ -1,0 +1,49 @@
+logging:
+  config: classpath:log4j2.xml
+  level:
+    root: info
+
+server:
+  port: 8010
+  servlet:
+    context-path: /mecm
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-idv-service
+          uri: http://localhost:8020
+          predicates:
+            - Path=/mecm/login,/mecm/signup
+          filters:
+            - CLATokenHandler=user-idv,VXNlcklEViMxMjM=
+            - LoginHandler=/mecm/login
+            - StripPrefix=1
+            - PrefixPath=/api/idv
+        - id: user-user-service
+          uri: http://localhost:8021
+          predicates:
+            - Path=/mecm/user/**
+          filters:
+            - SEATokenHandler=user-service
+            - StripPrefix=2
+            - PrefixPath=/api/user
+
+# noinspection undefined
+mecm:
+  gateway-service:
+    services:
+      cache:
+        host: http://localhost:8011/api
+        path-query-cache: ${mecm.gateway-service.services.cache.host}/cache/session/query
+        timeout: 10000
+      token:
+        host: http://localhost:8012/api
+        path-save: ${mecm.gateway-service.services.token.host}/token/access-token/save
+        path-query: ${mecm.gateway-service.services.token.host}/token/access-token/retrieve
+        path-session-trust: ${mecm.gateway-service.services.token.host}/token/e2e-trust/session/retrieve
+        path-client-trust: ${mecm.gateway-service.services.token.host}/token/e2e-trust/client/retrieve
+        timeout: 10000
+    cookies-config:
+      timeout: 2400

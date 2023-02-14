@@ -1,18 +1,19 @@
-package com.sl.mecm.service.gateway.authorize;
+package com.sl.mecm.service.gateway.service;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.sl.mecm.core.commons.constants.CommonVariables;
 import com.sl.mecm.core.commons.http.HttpService;
 import com.sl.mecm.core.commons.web.UserAccountInfo;
+import com.sl.mecm.service.gateway.authorize.MECMUserAuthenticationToken;
 import com.sl.mecm.service.gateway.configs.CacheServiceConfigs;
 import com.sl.mecm.service.gateway.exceptions.AuthException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -32,12 +33,15 @@ public class UserSessionService extends HttpService {
     @Autowired
     private CacheServiceConfigs cacheServiceConfigs;
 
-    public Mono<SecurityContext> retrieveSession(String accountId){
-        return reactivePost(cacheServiceConfigs.getPathSaveCache(), JSONObject.of(CommonVariables.DATA_KEY, accountId), new HashMap<>())
+    public Mono<SecurityContext> retrieveSession(String sessionToken){
+        if (!StringUtils.hasText(sessionToken)){
+            return Mono.just(new SecurityContextImpl(unAuthToken()));
+        }
+        return reactivePost(cacheServiceConfigs.getPathQueryCache(), JSONObject.of(CommonVariables.DATA_KEY, sessionToken), new HashMap<>())
                 .map(JSON::parseObject)
                 .map(bodyObject -> {
                     if (!isResponseSuccess(bodyObject)){
-                        throw new AuthException("503", "user session not found by:[" + accountId + "]", bodyObject);
+                        throw new AuthException("503", "user session not found by:[" + sessionToken + "]", bodyObject);
                     }
                     return bodyObject.getJSONObject(CommonVariables.DATA);
                 })

@@ -28,9 +28,9 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
-public class LoginHandlingGatewayFilterFactory extends AbstractGatewayFilterFactory<NameConfig> {
+public class LoginHandlerGatewayFilterFactory extends AbstractGatewayFilterFactory<NameConfig> {
 
-    public LoginHandlingGatewayFilterFactory() {
+    public LoginHandlerGatewayFilterFactory() {
         super(NameConfig.class);
     }
 

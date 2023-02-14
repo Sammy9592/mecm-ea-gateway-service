@@ -1,15 +1,15 @@
-package com.sl.mecm.service.user.idv.configs;
+package com.sl.mecm.service.gateway.configs;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "mecm.user-idv.services.cache")
+@ConfigurationProperties(prefix = "mecm.gateway-service.services.cache")
 public class CacheServiceConfigs {
 
     private String host;
 
-    private String endpointSaveCache;
+    private String pathQueryCache;
 
     private int timeout;
 
@@ -21,12 +21,12 @@ public class CacheServiceConfigs {
         this.host = host;
     }
 
-    public String getEndpointSaveCache() {
-        return endpointSaveCache;
+    public String getPathQueryCache() {
+        return pathQueryCache;
     }
 
-    public void setEndpointSaveCache(String endpointSaveCache) {
-        this.endpointSaveCache = endpointSaveCache;
+    public void setPathQueryCache(String pathQueryCache) {
+        this.pathQueryCache = pathQueryCache;
     }
 
     public int getTimeout() {

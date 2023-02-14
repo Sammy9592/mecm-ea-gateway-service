@@ -1,12 +1,14 @@
-package com.sl.mecm.auth.intercptor.service;
+package com.sl.mecm.service.gateway.service;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import com.sl.mecm.auth.intercptor.config.TokenServiceConfig;
 import com.sl.mecm.core.commons.constants.CommonVariables;
 import com.sl.mecm.core.commons.exception.ErrorCode;
 import com.sl.mecm.core.commons.exception.MECMHttpException;
+import com.sl.mecm.core.commons.exception.MECMServiceException;
 import com.sl.mecm.core.commons.http.HttpService;
+import com.sl.mecm.service.gateway.configs.TokenServiceConfig;
+import com.sl.mecm.service.gateway.constants.Values;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,8 +17,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.HashMap;
+import java.util.function.Function;
 
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Service("mecmTokenService")
 @Slf4j
@@ -27,6 +31,9 @@ public class TokenService extends HttpService {
 
     @Autowired
     private RestTemplate tokenServiceRestTemplate;
+
+    @Autowired
+    private WebClient tokenWebClient;
 
     public String getSessionToken(String accessToken){
         Assert.hasText(accessToken, "access token must be not empty");
@@ -46,6 +53,52 @@ public class TokenService extends HttpService {
             log.error("error on query session token", e);
         }
         return null;
+    }
+
+    public Mono<String> getSessionTrustToken(String source, String sessionToken){
+        Assert.hasText(source, "source must be not empty");
+        Assert.hasText(sessionToken, "session token must be not empty");
+        JSONObject requestBody =
+                JSONObject.of()
+                        .fluentPut(CommonVariables.AUTH_TYPE, Values.AUTH_TYPE_SESSION)
+                        .fluentPut(
+                                CommonVariables.AUTH_CERTS,
+                                JSONObject.of()
+                                        .fluentPut(CommonVariables.SOURCE, source)
+                                        .fluentPut(CommonVariables.SESSION_TOKEN, sessionToken)
+                        );
+        return reactivePost(tokenServiceConfig.getPathSessionTrust(), requestBody, new HashMap<>())
+                .onErrorResume(MECMHttpException.class, e -> {
+                    log.error("error on retrieve session trust token, response status:" + e.getCode() + "; response:" + e.getResponseBody());
+                    throw e;
+                })
+                .onErrorResume(Exception.class, e -> {
+                    log.error("error on retrieve session trust token:" + e.getLocalizedMessage());
+                    throw new MECMServiceException(ErrorCode.ERROR.getCode(), e.getMessage(), null);
+                });
+    }
+
+    public Mono<String> getClientTrustToken(String source, String secret){
+        Assert.hasText(source, "source must be not empty");
+        Assert.hasText(secret, "secret must be not empty");
+        JSONObject requestBody =
+                JSONObject.of()
+                        .fluentPut(CommonVariables.AUTH_TYPE, Values.AUTH_TYPE_CLIENT)
+                        .fluentPut(
+                                CommonVariables.AUTH_CERTS,
+                                JSONObject.of()
+                                        .fluentPut(CommonVariables.SOURCE, source)
+                                        .fluentPut(CommonVariables.SECRET, secret)
+                        );
+        return reactivePost(tokenServiceConfig.getPathClientTrust(), requestBody, new HashMap<>())
+                .onErrorResume(MECMHttpException.class, e -> {
+                    log.error("error on retrieve client trust token, response status:" + e.getCode() + "; response:" + e.getResponseBody());
+                    throw e;
+                })
+                .onErrorResume(Exception.class, e -> {
+                    log.error("error on retrieve client trust token:" + e.getLocalizedMessage());
+                    throw new MECMServiceException(ErrorCode.ERROR.getCode(), e.getMessage(), null);
+                });
     }
 
     public void saveSessionToken(String accessToken, String sessionToken){
@@ -71,6 +124,6 @@ public class TokenService extends HttpService {
 
     @Override
     protected WebClient thisWebClient() {
-        return null;
+        return tokenWebClient;
     }
 }

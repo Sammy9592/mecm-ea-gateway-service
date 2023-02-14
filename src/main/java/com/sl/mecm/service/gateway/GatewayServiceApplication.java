@@ -1,4 +1,4 @@
-package com.sl.mecm.gateway.service;
+package com.sl.mecm.service.gateway;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,19 +6,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
-@EnableAutoConfiguration
-public class GatewayServiceApplication {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger logger = LoggerFactory.getLogger(GatewayServiceApplication.class);
+@SpringBootApplication(scanBasePackages = "com.sl.mecm.*")
+@EnableAutoConfiguration(exclude = org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class)
+@Slf4j
+public class GatewayServiceApplication {
 
     public static void main(String[] args) {
         try {
-            logger.debug("start web service application debug");
-            logger.info("start web service application info");
-            logger.error("start web service application error");
             SpringApplication.run(GatewayServiceApplication.class, args);
         }catch (Exception e){
+            log.error("start app error", e);
             e.printStackTrace();
         }
     }

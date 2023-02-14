@@ -1,4 +1,4 @@
-package com.sl.mecm.auth.intercptor.utils;
+package com.sl.mecm.service.gateway.utils;
 
 import com.sl.mecm.core.commons.utils.UUIDTool;
 
